@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Car Controller</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            /* Mencegah zoom dan seleksi teks saat tombol ditahan di HP */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #38bdf8;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* Layout D-Pad menggunakan CSS Grid */
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 80px);
+            gap: 15px;
+            justify-items: center;
+            align-items: center;
+        }
+
+        /* Penempatan Tombol */
+        .btn-up { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+        .btn-down { grid-column: 2; grid-row: 3; }
+
+        /* Styling Tombol Profesional */
+        .control-btn {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 2px solid #334155;
+            border-radius: 20px;
+            color: #e2e8f0;
+            font-size: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 5px 5px 10px #0a0f1c, -5px -5px 10px #141f38;
+            transition: all 0.1s ease;
+        }
+
+        /* Efek saat tombol ditahan */
+        .control-btn:active {
+            background: #38bdf8;
+            color: #0f172a;
+            border-color: #38bdf8;
+            box-shadow: inset 5px 5px 10px rgba(0,0,0,0.3), inset -5px -5px 10px rgba(255,255,255,0.1);
+            transform: scale(0.95);
+        }
+
+        /* Indikator Status */
+        .status {
+            margin-top: 40px;
+            padding: 10px 20px;
+            background-color: #1e293b;
+            border-radius: 30px;
+            font-size: 14px;
+            color: #10b981;
+            border: 1px solid #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>SMART CAR PRO</h1>
+        <p>ESP32 Web Controller</p>
+    </div>
+
+    <div class="d-pad">
+        <div class="control-btn btn-up" id="btn-forward">▲</div>
+        <div class="control-btn btn-left" id="btn-left">◀</div>
+        <div class="control-btn btn-right" id="btn-right">▶</div>
+        <div class="control-btn btn-down" id="btn-backward">▼</div>
+    </div>
+
+    <div class="status" id="status-text">Status: Ready</div>
+
+    <script>
+        // IP ESP32 kamu yang sudah fix
+        const ESP32_URL = "http://10.58.206.211"; 
+        const statusText = document.getElementById("status-text");
+
+        // Fungsi untuk mengirim perintah ke ESP32
+        function sendCommand(action) {
+            // Menampilkan status di layar
+            statusText.innerText = `Status: Sending '${action}'...`;
+            statusText.style.color = action === 'stop' ? '#ef4444' : '#38bdf8';
+            statusText.style.borderColor = action === 'stop' ? '#ef4444' : '#38bdf8';
+
+            // Mengirim request ke ESP32 (tanpa mengharapkan respon halaman baru)
+            fetch(`${ESP32_URL}/${action}`, { method: 'GET' })
+                .catch(error => console.log("Error:", error));
+        }
+
+        // Daftar tombol dan perintahnya
+        const buttons = {
+            "btn-forward": "forward",
+            "btn-backward": "backward",
+            "btn-left": "left",
+            "btn-right": "right"
+        };
+
+        // Memasang event listener ke setiap tombol
+        for (const [id, action] of Object.entries(buttons)) {
+            const btn = document.getElementById(id);
+
+            // Saat disentuh/diklik (Mobil Jalan)
+            btn.addEventListener("mousedown", () => sendCommand(action));
+            btn.addEventListener("touchstart", (e) => {
+                e.preventDefault(); // Mencegah scroll layar
+                sendCommand(action);
+            });
+
+            // Saat dilepas (Mobil Berhenti)
+            btn.addEventListener("mouseup", () => sendCommand("stop"));
+            btn.addEventListener("mouseleave", () => sendCommand("stop")); // Jaga-jaga kursor keluar area tombol
+            btn.addEventListener("touchend", (e) => {
+                e.preventDefault();
+                sendCommand("stop");
+            });
+        }
+    </script>
+</body>
+</html>
