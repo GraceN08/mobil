@@ -119,7 +119,7 @@
     <div class="status" id="status-text">Status: Ready</div>
 
     <script>
-        // IP ESP32 kamu yang sudah fix
+        // IP ESP32 kamu
         const ESP32_URL = "http://10.58.206.211"; 
         const statusText = document.getElementById("status-text");
 
@@ -130,7 +130,7 @@
             statusText.style.color = action === 'stop' ? '#ef4444' : '#38bdf8';
             statusText.style.borderColor = action === 'stop' ? '#ef4444' : '#38bdf8';
 
-            // Mengirim request ke ESP32 (tanpa mengharapkan respon halaman baru)
+            // Mengirim request ke ESP32
             fetch(`${ESP32_URL}/${action}`, { method: 'GET' })
                 .catch(error => console.log("Error:", error));
         }
